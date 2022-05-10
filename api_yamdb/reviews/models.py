@@ -22,7 +22,7 @@ class Genres(models.Model):
 
 class Titles(models.Model):
     name = models.CharField(max_length=255)
-    year = models.IntegerField(MinValueValidator=1900)
+    # year = models.IntegerField(MinValueValidator=1900)
     description = models.TextField()
     genre = models.ForeignKey(
         Genres,

@@ -1,6 +1,8 @@
-from django.shortcuts import render
-from .models import User
+from rest_framework import viewsets
 
-def profile(request):
-    users = User.objects.all()
-    return render(request, 'users/profile.html', {'users': users})
+from users.models import User
+from .serializers import UserSerializer
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
