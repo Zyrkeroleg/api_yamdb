@@ -16,6 +16,8 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class TitleSerializer(serializers.ModelSerializer):
-    class meta:
-        fields = '__all__'
+    description = serializers.CharField(required=False)
+
+    class Meta:
+        fields = ('name', 'year', 'description', 'genre', 'category')
         model = Titles
