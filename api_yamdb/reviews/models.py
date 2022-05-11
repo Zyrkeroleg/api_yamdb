@@ -1,12 +1,16 @@
+import datetime
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.core.validators import MaxValueValidator
 
 User = get_user_model()
+now = datetime.datetime.now()
+CURRENT_YEAR = now.year  # текущий год, для проверки поля year
 
 
 class Categories(models.Model):
-    name = models.CharField(max_length=255)
-    slug = models.SlugField(unique=True)
+    name = models.CharField(max_length=256)
+    slug = models.SlugField(unique=True, max_length=50)
 
     def __str__(self):
         return self.name
@@ -22,7 +26,7 @@ class Genres(models.Model):
 
 class Titles(models.Model):
     name = models.CharField(max_length=255)
-    # year = models.IntegerField(MinValueValidator=1900)
+    year = models.IntegerField(validators=[MaxValueValidator(CURRENT_YEAR)])
     description = models.TextField()
     genre = models.ForeignKey(
         Genres,
