@@ -3,7 +3,8 @@ from rest_framework.pagination import LimitOffsetPagination
 from django_filters.rest_framework import DjangoFilterBackend
 
 from reviews.models import Genres, Categories, Titles
-from .serializers import GenreSerializer, CategorySerializer, TitleSerializer
+from .serializers import (GenreSerializer, CategorySerializer,
+                          TitleSerializer)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -12,6 +13,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     http_method_names = ['get', 'post', 'head', 'patch', 'delete']
     filter_fields = ('category', 'genre', 'name', 'year')
+    pagination_class = LimitOffsetPagination
 
 
 class GenreViewSet(mixins.CreateModelMixin,
