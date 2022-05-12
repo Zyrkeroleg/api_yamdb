@@ -19,4 +19,3 @@ class User(AbstractUser):
       choices=user_type,
       default=USER
    )
-   

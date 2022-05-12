@@ -5,7 +5,7 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
-from users.views import UserViewSet
+from users.views import UserViewSet, sending_mail
 
 from .views import TitleViewSet, GenreViewSet, CategoryViewSet
 from users.views import UserViewSet
@@ -18,6 +18,8 @@ router_v1.register(r'users', UserViewSet)
 
 urlpatterns = [
     path('v1/', include(router_v1.urls)),
+    path('v1/auth/singup/', sending_mail),   # отправка сообщения на почту
     path('v1/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('v1/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('v1/token/refresh/', TokenRefreshView.as_view(),
+         name='token_refresh'),
 ]
