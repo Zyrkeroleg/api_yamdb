@@ -1,20 +1,22 @@
-from django.urls import path, include
+from django.urls import include, path
 from rest_framework.routers import SimpleRouter
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
-)
+from rest_framework_simplejwt.views import (TokenObtainPairView,
+                                            TokenRefreshView)
+from users.views import UserViewSet, get_jwt_token, sending_mail
 
-from users.views import UserViewSet, sending_mail, get_jwt_token
-
-from .views import TitleViewSet, GenreViewSet, CategoryViewSet
-from users.views import UserViewSet
+from .views import (CategoryViewSet, CommentViewSet, GenreViewSet,
+                    ReviewViewSet, TitleViewSet)
 
 router_v1 = SimpleRouter()
 router_v1.register(r'categories', CategoryViewSet)
 router_v1.register(r'genres', GenreViewSet)
 router_v1.register(r'titles', TitleViewSet)
 router_v1.register(r'users', UserViewSet)
+router_v1.register(r'titles/(?P<title_id>[^/.]+)/reviews',
+                   ReviewViewSet, basename='reviews')
+router_v1.register(
+    r'titles/(?P<title_id>[^/.]+)/reviews/(?P<review_id>[^/.]+)/comments',
+    CommentViewSet, basename='comments')
 
 urlpatterns = [
     path('v1/', include(router_v1.urls)),
