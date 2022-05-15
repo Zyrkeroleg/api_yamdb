@@ -1,15 +1,21 @@
 from rest_framework import viewsets, status, filters
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, action
 from rest_framework.response import Response
 from django.core.mail import send_mail
 from uuid import uuid4
 from users.models import User
-from .serializers import UserSerializer, MailSerializer
+from .serializers import UserSerializer, MailSerializer, UserSerializerOrReadOnly
 from .validators import email_validator
+from rest_framework.permissions import (
+    IsAuthenticatedOrReadOnly,
+    IsAuthenticated
+)
+from .permissions import AdminOnlyPermission
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.conf import settings
+from rest_framework.pagination import PageNumberPagination
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -22,9 +28,11 @@ def sending_mail(request):
     serializer = MailSerializer(data=request.data)  # подключаем сериализатор
     serializer.is_valid(raise_exception=True) # проверка валидности, если что выдаётся Response с эксепшэном
     email = serializer.data['email'] # получаем email из переданных пользователем данных
-    if email not in User.objects.filter(email=email): # проверка на существование в БД
-        User.objects.get_or_create(username=f'user_{email}', email=email) # в случае отсутствия создаём нового пользователя
+    username = request.data.get('username')
+    if email in User.objects.filter(email=email): # проверка на существование в БД
+        raise ValidationError('Пользователь уже создан')
     token = uuid4() # создание токена
+    User.objects.get_or_create(username=username, email=email, token=token) # в случае отсутствия создаём нового пользователя
     send_mail(
         'Регистрация',
         (f'Email : {email}\n'
@@ -38,24 +46,27 @@ def sending_mail(request):
 
 @api_view(['POST'])
 def get_jwt_token(request):
-    email = request.data.get('email')
-    email_validator(email)
+    """Получение токена."""
+    username = request.data.get('username')
     confirmation_code = request.data.get('confirmation_code')
-    if not confirmation_code or not email:
+    user = User.objects.get(username=username)
+    if not confirmation_code or not username:
         raise ValidationError(
             {
-                'info': 'Заполни необходимые поля'
+                'info': 'confirmation_code и email '
+                        'являются обязательными полями!'
             }
         )
-    user = get_object_or_404(User, email=email)
-    result = {'info': 'Не верный код'}
-    if uuid4().check_token(
-            user=user,
-            token=confirmation_code
-    ):
+    token = user.token
+    result = {'Введите правильный confirmation_code'}
+    print(token)
+    print(user)
+    print(username)
+
+    if confirmation_code == token:
         user.is_active = True
         user.save()
-
+            
         def get_tokens_for_user(current_user):
             refresh = RefreshToken.for_user(current_user)
 
@@ -63,7 +74,40 @@ def get_jwt_token(request):
                 'refresh': str(refresh),
                 'access': str(refresh.access_token),
             }
-
         result = get_tokens_for_user(user)
     return Response(result)
 
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = (AdminOnlyPermission,)
+    pagination_class = PageNumberPagination
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['username',]
+
+    @action(
+        detail=False,
+        methods=['get', 'patch'],
+        permission_classes=[IsAuthenticated]
+    )
+    def me(self, request):
+        user = request.user
+        if request.method == 'GET':
+            serializer = UserSerializer(user)
+            return Response(
+                serializer.data,
+                status=status.HTTP_200_OK
+            )
+        if request.method == 'PATCH':
+            serializer = UserSerializerOrReadOnly(
+                user,
+                data=request.data,
+                partial=True
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(
+                serializer.data,
+                status=status.HTTP_200_OK
+            )

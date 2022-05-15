@@ -9,6 +9,13 @@ class UserSerializer(serializers.ModelSerializer):
         fields = '__all__'
         model = User
 
+class UserSerializerOrReadOnly(serializers.ModelSerializer):
+    role = serializers.CharField(read_only=True)
+
+    class Meta:
+        fields = '__all__'
+        model = User
+
 
 class MailSerializer(serializers.Serializer):
     """Сериализатор для mail"""

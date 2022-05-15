@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+
 class User(AbstractUser):
    USER = 'user'
    ADMIN = 'admin'
@@ -19,6 +20,7 @@ class User(AbstractUser):
       choices=user_type,
       default=USER
    )
+   token = models.CharField(max_length=200, blank=True)
   
    @property
    def is_admin(self):
@@ -31,3 +33,4 @@ class User(AbstractUser):
    @property
    def is_user(self):
       return self.role == self.USER
+
