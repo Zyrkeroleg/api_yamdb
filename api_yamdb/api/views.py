@@ -7,16 +7,21 @@ from rest_framework.views import PermissionDenied
 from reviews.models import Categories, Genres, Review, Titles
 
 from .serializers import (CategorySerializer, CommentSerializer,
-                          GenreSerializer, ReviewSerializer, TitleSerializer)
+                          GenreSerializer, ReviewSerializer,
+                          TitlePostSerializer, TitleGetSerializer)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Titles.objects.all()
-    serializer_class = TitleSerializer
     filter_backends = (DjangoFilterBackend,)
     http_method_names = ['get', 'post', 'head', 'patch', 'delete']
     filter_fields = ('category', 'genre', 'name', 'year')
     pagination_class = LimitOffsetPagination
+
+    def get_serializer_class(self):
+        if self.request.method in ('POST', 'PATCH'):
+            return TitlePostSerializer
+        return TitleGetSerializer
 
 
 class GenreViewSet(mixins.CreateModelMixin,
