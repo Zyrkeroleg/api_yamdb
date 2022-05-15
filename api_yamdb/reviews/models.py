@@ -28,7 +28,7 @@ class Titles(models.Model):
     name = models.CharField(max_length=255)
     year = models.IntegerField(validators=[MaxValueValidator(CURRENT_YEAR)])
     description = models.TextField()
-    genre = models.ManyToManyField(Genres)
+    genre = models.ManyToManyField(Genres, through='GenreTitles')
     category = models.ForeignKey(
         Categories,
         on_delete=models.SET_NULL,
@@ -39,3 +39,19 @@ class Titles(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class GenreTitles(models.Model):
+    genre = models.ForeignKey(
+        Genres,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True
+    )
+    title = models.ForeignKey(
+        Titles,
+        on_delete=models.CASCADE,
+    )
+
+    def __str__(self):
+        return f'{self.title} {self.genre}'
