@@ -28,7 +28,7 @@ class Genres(models.Model):
 class Titles(models.Model):
     name = models.CharField(max_length=255)
     year = models.IntegerField(validators=[MaxValueValidator(CURRENT_YEAR)])
-    rating = models.IntegerField(null=True) # временное поле рейтинга
+    rating = models.IntegerField(null=True)  # временное поле рейтинга
     description = models.TextField()
     genre = models.ManyToManyField(Genres)
     category = models.ForeignKey(
@@ -44,7 +44,7 @@ class Titles(models.Model):
 
 
 class Review(models.Model):
-    text = models.TextField() # required=True удалил из-за того что сервер не запускался
+    text = models.TextField()  # required=True удалил из-за того что сервер не запускался
     pub_date = models.DateTimeField(
         'Дата публикации', auto_now_add=True
     )
@@ -67,7 +67,7 @@ class Review(models.Model):
         (10, "10"),
     )
     score = models.CharField(max_length=2,
-                             choices=score_choices, default=1) # required=True удалил из-за того что сервер не запускался
+                             choices=score_choices, default=1)  # required=True удалил из-за того что сервер не запускался
 
     def __str__(self):
         return self.text

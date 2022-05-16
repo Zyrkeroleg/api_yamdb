@@ -8,7 +8,7 @@ from reviews.models import Categories, Genres, Review, Titles
 
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, ReviewSerializer,
-                          TitlePostSerializer, TitleGetSerializer)
+                          TitleGetSerializer, TitlePostSerializer)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -51,15 +51,15 @@ class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
 
     def perform_update(self, serializer):
-        # if self.request.user != admin or moderator:
-        if serializer.instance.author != self.request.user:
-            raise PermissionDenied('Изменение чужих ревью запрещено!')
+        if not self.request.user.is_admin or self.request.user.is_superuser:
+            if serializer.instance.author != self.request.user:
+                raise PermissionDenied('Изменение чужих ревью запрещено!')
         super(ReviewViewSet, self).perform_update(serializer)
 
     def perform_destroy(self, instance):
-        # if self.request.user != admin or moderator:
-        if instance.author != self.request.user:
-            raise PermissionDenied("Удаление чужих ревью запрещено")
+        if not self.request.user.is_admin or self.request.user.is_superuser:
+            if instance.author != self.request.user:
+                raise PermissionDenied("Удаление чужих ревью запрещено")
         return super().perform_destroy(instance)
 
     def perform_create(self, serializer):
@@ -76,15 +76,16 @@ class CommentViewSet(viewsets.ModelViewSet):
         return new_queryset
 
     def perform_update(self, serializer):
-        # if self.request.user != admin or moderator:
-        if serializer.instance.author != self.request.user:
-            raise PermissionDenied("Изменение чужих комментариев запрещено")
+        if not self.request.user.is_admin or self.request.user.is_superuser:
+            if serializer.instance.author != self.request.user:
+                raise PermissionDenied(
+                    "Изменение чужих комментариев запрещено")
         return super().perform_update(serializer)
 
     def perform_destroy(self, instance):
-        # if self.request.user != admin or moderator:
-        if instance.author != self.request.user:
-            raise PermissionDenied("Удаление чужих комментариев запрещено")
+        if not self.request.user.is_admin or self.request.user.is_superuser:
+            if instance.author != self.request.user:
+                raise PermissionDenied("Удаление чужих комментариев запрещено")
         return super().perform_destroy(instance)
 
     def create(self, request, *args, **kwargs):
