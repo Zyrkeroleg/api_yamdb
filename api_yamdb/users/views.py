@@ -6,10 +6,7 @@ from uuid import uuid4
 from users.models import User
 from .serializers import UserSerializer, MailSerializer, UserSerializerOrReadOnly
 from .validators import email_validator
-from rest_framework.permissions import (
-    IsAuthenticatedOrReadOnly,
-    IsAuthenticated
-)
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from .permissions import AdminOnlyPermission
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
@@ -27,8 +24,8 @@ class UserViewSet(viewsets.ModelViewSet):
 def sending_mail(request):
     serializer = MailSerializer(data=request.data)  # подключаем сериализатор
     serializer.is_valid(raise_exception=True) # проверка валидности, если что выдаётся Response с эксепшэном
-    email = serializer.data['email'] # получаем email из переданных пользователем данных
     username = request.data.get('username')
+    email = request.data.get('email')
     if email in User.objects.filter(email=email): # проверка на существование в БД
         raise ValidationError('Пользователь уже создан')
     token = uuid4() # создание токена
@@ -49,20 +46,16 @@ def get_jwt_token(request):
     """Получение токена."""
     username = request.data.get('username')
     confirmation_code = request.data.get('confirmation_code')
-    user = User.objects.get(username=username)
+    user = get_object_or_404(User,username=username)
     if not confirmation_code or not username:
         raise ValidationError(
             {
-                'info': 'confirmation_code и email '
+                'info': 'confirmation_code и username\n'
                         'являются обязательными полями!'
             }
         )
     token = user.token
     result = {'Введите правильный confirmation_code'}
-    print(token)
-    print(user)
-    print(username)
-
     if confirmation_code == token:
         user.is_active = True
         user.save()
@@ -79,12 +72,12 @@ def get_jwt_token(request):
 
 
 class UserViewSet(viewsets.ModelViewSet):
+    lookup_field = 'username'
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (AdminOnlyPermission,)
-    pagination_class = PageNumberPagination
     filter_backends = [filters.SearchFilter]
-    search_fields = ['username',]
+    search_fields = ['username', ]
 
     @action(
         detail=False,
