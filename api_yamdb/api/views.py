@@ -1,21 +1,24 @@
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, status, viewsets
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework.views import PermissionDenied
-from reviews.models import Categories, Genres, Review, Titles
 
+from reviews.models import Categories, Genres, Review, Titles
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, ReviewSerializer,
                           TitlePostSerializer, TitleGetSerializer)
+from .permissions import SafeMethodsOnlyPermission
+from .filters import TitleFilter
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Titles.objects.all()
     filter_backends = (DjangoFilterBackend,)
     http_method_names = ['get', 'post', 'head', 'patch', 'delete']
-    filter_fields = ('category', 'genre', 'name', 'year')
+    filter_class = TitleFilter
     pagination_class = LimitOffsetPagination
 
     def get_serializer_class(self):
@@ -33,6 +36,7 @@ class GenreViewSet(mixins.CreateModelMixin,
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     pagination_class = LimitOffsetPagination
+    permission_classes = (SafeMethodsOnlyPermission,)
 
 
 class CategoryViewSet(mixins.CreateModelMixin,
@@ -44,6 +48,7 @@ class CategoryViewSet(mixins.CreateModelMixin,
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     pagination_class = LimitOffsetPagination
+    permission_classes = (SafeMethodsOnlyPermission,)
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
