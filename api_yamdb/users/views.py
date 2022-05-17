@@ -13,11 +13,6 @@ from django.shortcuts import get_object_or_404
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.conf import settings
 from rest_framework.pagination import PageNumberPagination
-
-
-class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
     
 
 @api_view(['POST']) # только POST запросы 
