@@ -37,6 +37,7 @@ class GenreViewSet(mixins.CreateModelMixin,
     search_fields = ('name',)
     pagination_class = LimitOffsetPagination
     permission_classes = (SafeMethodsOnlyPermission,)
+    lookup_field = 'slug'
 
 
 class CategoryViewSet(mixins.CreateModelMixin,
@@ -49,6 +50,7 @@ class CategoryViewSet(mixins.CreateModelMixin,
     search_fields = ('name',)
     pagination_class = LimitOffsetPagination
     permission_classes = (SafeMethodsOnlyPermission,)
+    lookup_field = 'slug'
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
