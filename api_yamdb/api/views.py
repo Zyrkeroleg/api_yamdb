@@ -1,4 +1,3 @@
-from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, status, viewsets
@@ -8,7 +7,7 @@ from rest_framework.views import PermissionDenied
 from reviews.models import Categories, Genres, Review, Titles
 
 from .filters import TitleFilter
-from .permissions import SafeMethodsOnlyPermission
+from .permissions import SafeMethodsOnlyPermission, AdminOnlyPermission
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, ReviewSerializer,
                           TitleGetSerializer, TitlePostSerializer)
@@ -20,6 +19,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'head', 'patch', 'delete']
     filter_class = TitleFilter
     pagination_class = LimitOffsetPagination
+    permission_classes = (AdminOnlyPermission,)
 
     def get_serializer_class(self):
         if self.request.method in ('POST', 'PATCH'):

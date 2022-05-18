@@ -2,7 +2,7 @@ from rest_framework import permissions
 
 
 class SafeMethodsOnlyPermission(permissions.BasePermission):
-    """Права доступа для администратора и при безопасных методах"""
+    """Права доступа для администратора, супрюзера и при безопасных методах"""
 
     def has_permission(self, request, view):
         if (request.user.is_superuser
@@ -22,4 +22,13 @@ class ReviewsComentsPermission(permissions.BasePermission):
             return True
         elif (request.user == obj.author
               or request.method in permissions.SAFE_METHODS):
+            return True
+
+
+class AdminOnlyPermission(permissions.BasePermission):
+    """Права POST, PATCH, DELETE только администратора, а GET у всех"""
+
+    def has_permission(self, request, view):
+        if (request.user.is_authenticated and request.user.is_admin
+           or request.method in permissions.SAFE_METHODS):
             return True
