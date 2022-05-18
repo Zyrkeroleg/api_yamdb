@@ -1,22 +1,27 @@
-from rest_framework import viewsets, status, filters
-from rest_framework.decorators import api_view, action
-from rest_framework.response import Response
-from django.core.mail import send_mail
-from uuid import uuid4
-from users.models import User
-from .serializers import UserSerializer, UserSerializerOrReadOnly, RegisterSerializer
-from .validators import email_validator
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from .permissions import AdminOnlyPermission
-from django.core.exceptions import ValidationError
-from django.shortcuts import get_object_or_404
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.conf import settings
-from rest_framework.pagination import PageNumberPagination
-from django.contrib.auth.tokens import default_token_generator
-    
+# from uuid import uuid4
 
-@api_view(['POST']) # только POST запросы 
+from django.conf import settings
+from django.contrib.auth.tokens import default_token_generator
+from django.core.exceptions import ValidationError
+from django.core.mail import send_mail
+from django.shortcuts import get_object_or_404
+from rest_framework import filters, status, viewsets
+from rest_framework.decorators import action, api_view
+# from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from users.models import User
+
+from .permissions import AdminOnlyPermission
+from .serializers import (RegisterSerializer, UserSerializer,
+                          UserSerializerOrReadOnly)
+
+# from .validators import email_validator
+
+
+@api_view(['POST'])  # только POST запросы
 def sending_mail(request):
     serializer = RegisterSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
@@ -35,7 +40,8 @@ def sending_mail(request):
         [user.email],
         fail_silently=False,
     )
-    return Response('Код выслан Вам на почту!', status=status.HTTP_200_OK)  # ответ, если всё верно
+    # ответ, если всё верно
+    return Response('Код выслан Вам на почту!', status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
@@ -43,7 +49,7 @@ def get_jwt_token(request):
     """Получение токена."""
     username = request.data.get('username')
     confirmation_code = request.data.get('confirmation_code')
-    user = get_object_or_404(User,username=username)
+    user = get_object_or_404(User, username=username)
     if not confirmation_code or not username:
         raise ValidationError(
             {
@@ -56,7 +62,7 @@ def get_jwt_token(request):
     if confirmation_code == token:
         user.is_active = True
         user.save()
-            
+
         def get_tokens_for_user(current_user):
             refresh = RefreshToken.for_user(current_user)
 
