@@ -21,7 +21,7 @@ router_v1.register(
 urlpatterns = [
     path('v1/', include(router_v1.urls)),
     path('v1/auth/signup/', sending_mail),   # отправка сообщения на почту
-    path('v1/auth/token/', get_jwt_token, name='token_obtain_pair'),
+    path('v1/auth/token/', get_jwt_token),
     path('v1/auth/token/refresh/', TokenRefreshView.as_view(),
          name='token_refresh'),
 ]
