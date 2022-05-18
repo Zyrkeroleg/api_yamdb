@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
+
 from users.models import User
 
 
@@ -8,6 +9,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
         model = User
+
 
 class UserSerializerOrReadOnly(serializers.ModelSerializer):
     role = serializers.CharField(read_only=True)
