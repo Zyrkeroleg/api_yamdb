@@ -50,7 +50,7 @@ class TitleGetSerializer(serializers.ModelSerializer):
             rating = None
             return rating
         rating = reviews.all().aggregate(Avg('score'))
-        return rating
+        return rating['score__avg']
 
 
 class CommentSerializer(serializers.ModelSerializer):
