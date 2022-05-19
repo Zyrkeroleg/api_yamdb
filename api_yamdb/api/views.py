@@ -5,7 +5,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, status, viewsets
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
-# from rest_framework.views import PermissionDenied
+from rest_framework.views import PermissionDenied
 from reviews.models import Categories, Genres, Review, Titles
 
 from .filters import TitleFilter
@@ -64,6 +64,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         title_id = self.kwargs.get("title_id")
         title = get_object_or_404(Titles, id=title_id)
+
         serializer.save(author=self.request.user, title=title)
 
 
