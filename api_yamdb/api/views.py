@@ -5,11 +5,12 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, status, viewsets
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
-from rest_framework.views import PermissionDenied
+# from rest_framework.views import PermissionDenied
 from reviews.models import Categories, Genres, Review, Titles
 
 from .filters import TitleFilter
-from .permissions import AdminOnlyPermission, SafeMethodsOnlyPermission
+from .permissions import (AdminOnlyPermission, ReviewsComentsPermission,
+                          SafeMethodsOnlyPermission)
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, ReviewSerializer,
                           TitleGetSerializer, TitlePostSerializer)
@@ -58,18 +59,7 @@ class CategoryViewSet(mixins.CreateModelMixin,
 class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
-
-    def perform_update(self, serializer):
-        if not self.request.user.is_admin or self.request.user.is_superuser:
-            if serializer.instance.author != self.request.user:
-                raise PermissionDenied('Изменение чужих ревью запрещено!')
-        super(ReviewViewSet, self).perform_update(serializer)
-
-    def perform_destroy(self, instance):
-        if not self.request.user.is_admin or self.request.user.is_superuser:
-            if instance.author != self.request.user:
-                raise PermissionDenied("Удаление чужих ревью запрещено")
-        return super().perform_destroy(instance)
+    permission_classes = (ReviewsComentsPermission,)
 
     def perform_create(self, serializer):
         title_id = self.kwargs.get("title_id")
@@ -79,25 +69,13 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
+    permission_classes = (ReviewsComentsPermission,)
 
     def get_queryset(self):
         review_id = self.kwargs.get("review_id")
         review = get_object_or_404(Review, id=review_id)
         new_queryset = review.comments.all()
         return new_queryset
-
-    def perform_update(self, serializer):
-        if not self.request.user.is_admin or self.request.user.is_superuser:
-            if serializer.instance.author != self.request.user:
-                raise PermissionDenied(
-                    "Изменение чужих комментариев запрещено")
-        return super().perform_update(serializer)
-
-    def perform_destroy(self, instance):
-        if not self.request.user.is_admin or self.request.user.is_superuser:
-            if instance.author != self.request.user:
-                raise PermissionDenied("Удаление чужих комментариев запрещено")
-        return super().perform_destroy(instance)
 
     def create(self, request, *args, **kwargs):
         serializer = CommentSerializer(data=request.data)
