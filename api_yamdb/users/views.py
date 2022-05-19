@@ -1,7 +1,13 @@
-# from uuid import uuid4
-
-from django.conf import settings
-from django.contrib.auth.tokens import default_token_generator
+from rest_framework import viewsets, status, filters
+from rest_framework.decorators import api_view, action
+from rest_framework.response import Response
+from django.core.mail import send_mail
+from uuid import uuid4
+from users.models import User
+from .serializers import UserSerializer, UserSerializerOrReadOnly, RegisterSerializer, TokenSerializer
+from .validators import email_validator
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from .permissions import AdminOnlyPermission
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
@@ -11,6 +17,10 @@ from rest_framework.decorators import action, api_view
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.conf import settings
+from rest_framework.pagination import PageNumberPagination
+from django.contrib.auth.tokens import default_token_generator
+from rest_framework_simplejwt.tokens import AccessToken
 
 from users.models import User
 
@@ -40,38 +50,29 @@ def sending_mail(request):
         [user.email],
         fail_silently=False,
     )
-    # ответ, если всё верно
-    return Response('Код выслан Вам на почту!', status=status.HTTP_200_OK)
+    return Response(serializer.data, status=status.HTTP_200_OK)  # ответ, если всё верно
+
 
 
 @api_view(['POST'])
 def get_jwt_token(request):
     """Получение токена."""
-    username = request.data.get('username')
-    confirmation_code = request.data.get('confirmation_code')
-    user = get_object_or_404(User, username=username)
-    if not confirmation_code or not username:
-        raise ValidationError(
-            {
-                'info': 'confirmation_code и username '
-                        'являются обязательными полями!'
-            }
+    serializer = TokenSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    user = get_object_or_404(User,username=serializer.validated_data['username'])
+    if default_token_generator.check_token(
+        user,
+        serializer.validated_data['confirmation_code']
+    ):
+        token = AccessToken.for_user(user)
+        return Response(
+            {'token': f'{token}'},
+            status=status.HTTP_200_OK
         )
-    token = user.token
-    result = {'Введите правильный confirmation_code'}
-    if confirmation_code == token:
-        user.is_active = True
-        user.save()
-
-        def get_tokens_for_user(current_user):
-            refresh = RefreshToken.for_user(current_user)
-
-            return {
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
-            }
-        result = get_tokens_for_user(user)
-    return Response(result)
+    return Response(
+        {'message': 'Пользователь не обнаружен'},
+        status=status.HTTP_400_BAD_REQUEST
+    )
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -79,8 +80,19 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (AdminOnlyPermission,)
+    pagination_class = PageNumberPagination
     filter_backends = [filters.SearchFilter]
     search_fields = ['username', ]
+
+    def create(self, request, *args, **kwargs):
+        if not request.data.get('email'):
+            return Response('Поле email обязательно', status=status.HTTP_400_BAD_REQUEST)
+        email = request.data.get('email')
+        print(email)
+        if User.objects.filter(email=email):
+            return Response('Email уже зарегестрирован', status=status.HTTP_400_BAD_REQUEST)
+        
+        return super().create(request, *args, **kwargs)
 
     @action(
         detail=False,
