@@ -28,7 +28,7 @@ class Genres(models.Model):
 class Titles(models.Model):
     name = models.CharField(max_length=255)
     year = models.IntegerField(validators=[MaxValueValidator(CURRENT_YEAR)])
-    rating = models.IntegerField(null=True)  # временное поле рейтинга
+    # rating = models.IntegerField(null=True)
     description = models.TextField()
     genre = models.ManyToManyField(Genres)
     category = models.ForeignKey(
@@ -44,7 +44,7 @@ class Titles(models.Model):
 
 
 class Review(models.Model):
-    text = models.TextField()  # required=True удалил из-за того что сервер не запускался
+    text = models.TextField()
     pub_date = models.DateTimeField(
         'Дата публикации', auto_now_add=True
     )
@@ -67,7 +67,14 @@ class Review(models.Model):
         (10, "10"),
     )
     score = models.CharField(max_length=2,
-                             choices=score_choices, default=1)  # required=True удалил из-за того что сервер не запускался
+                             choices=score_choices, default=1)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['author', 'title'], name='unique_review')
+        ]
+        ordering = ["-pub_date"]
 
     def __str__(self):
         return self.text
@@ -80,7 +87,7 @@ class Comment(models.Model):
     review = models.ForeignKey(
         Review, on_delete=models.CASCADE, related_name='comments'
     )
-    text = models.TextField()  # required=True удалил из-за того что сервер не запускался
+    text = models.TextField()
     pub_date = models.DateTimeField(
         'Дата добавления', auto_now_add=True, db_index=True
     )

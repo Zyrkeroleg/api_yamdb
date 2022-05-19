@@ -1,4 +1,5 @@
 from django.db.models import Avg
+from django.forms import ValidationError
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 from reviews.models import Categories, Comment, Genres, Review, Titles
@@ -51,7 +52,8 @@ class TitleGetSerializer(serializers.ModelSerializer):
             rating = None
             return rating
         rating = reviews.all().aggregate(Avg('score'))
-        return rating['score__avg']
+        result = rating['score__avg']
+        return result
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -80,13 +82,17 @@ class ReviewSerializer(serializers.ModelSerializer):
         slug_field='id',
         default=serializers.CurrentUserDefault())
 
+    def validate(self, data):
+        print(self.context)
+        title = self.context['view'].kwargs['title_id']
+        author = self.context['request'].user
+        set = Review.objects.filter(title=title)
+        for review in set:
+            if review.author.username == author.username:
+                raise ValidationError(
+                    'Вы уже оставляли ревью к этому произведению')
+        return data
+
     class Meta:
         model = Review
         fields = '__all__'
-
-        validators = [
-            UniqueTogetherValidator(
-                queryset=Review.objects.all(),
-                fields=('title', 'author')
-            )
-        ]
