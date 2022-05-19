@@ -1,8 +1,9 @@
 from django.db.models import Avg
 from django.forms import ValidationError
+from requests import request
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
-from reviews.models import Categories, Comment, Genres, Review, Titles
+from reviews.models import Categories, Comment, Genres, Review, Title
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -31,7 +32,7 @@ class TitlePostSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = ('id', 'name', 'year', 'description', 'genre', 'category')
-        model = Titles
+        model = Title
 
 
 class TitleGetSerializer(serializers.ModelSerializer):
@@ -43,7 +44,7 @@ class TitleGetSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'year', 'rating', 'description',
                   'genre', 'category', 'rating'
                   )
-        model = Titles
+        model = Title
 
     def get_rating(self, title):
         reviews = Review.objects.filter(
@@ -83,14 +84,15 @@ class ReviewSerializer(serializers.ModelSerializer):
         default=serializers.CurrentUserDefault())
 
     def validate(self, data):
-        print(self.context)
+        print(self)
         title = self.context['view'].kwargs['title_id']
         author = self.context['request'].user
         set = Review.objects.filter(title=title)
-        for review in set:
-            if review.author.username == author.username:
-                raise ValidationError(
-                    'Вы уже оставляли ревью к этому произведению')
+        if self.context['request'].method != "PATCH":
+            for review in set:
+                if review.author.username == author.username:
+                    raise ValidationError(
+                        'Вы уже оставляли ревью к этому произведению')
         return data
 
     class Meta:
