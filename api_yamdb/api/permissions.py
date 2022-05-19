@@ -12,16 +12,18 @@ class SafeMethodsOnlyPermission(permissions.BasePermission):
             return True
 
 
-# Пусть заготовка пока повисит тут на случай,
-# если пермишн во views не будет работать
 class ReviewsComentsPermission(permissions.BasePermission):
     """Проверка прав доступа для ревью и комментариев"""
 
     def has_object_permission(self, request, view, obj):
-        if request.user.is_superuser or request.user.is_admin:
+        if (request.user.is_superuser
+                or request.method in permissions.SAFE_METHODS):
             return True
-        elif (request.user == obj.author
-              or request.method in permissions.SAFE_METHODS):
+        elif request.user.is_authenticated and request.user.is_admin:
+            return True
+        elif request.user.is_authenticated and request.user.is_moderator:
+            return True
+        elif request.user == obj.author:
             return True
 
 
