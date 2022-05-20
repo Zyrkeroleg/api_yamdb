@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from reviews.models import Categories, Genres, Review, Title
 
 from .filters import TitleFilter
-from .pagination import CustomPagination
+from .pagination import CustomCommentPagination, CustomReviewPagination
 from .permissions import (AdminOnlyPermission, ReviewsComentsPermission,
                           SafeMethodsOnlyPermission)
 from .serializers import (CategorySerializer, CommentSerializer,
@@ -58,7 +58,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
     permission_classes = (ReviewsComentsPermission,)
-    pagination_class = CustomPagination
+    pagination_class = CustomReviewPagination
 
     def get_queryset(self):
         title_id = self.kwargs.get("title_id")
@@ -75,6 +75,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = (ReviewsComentsPermission,)
+    pagination_class = CustomCommentPagination
 
     def get_queryset(self):
         review_id = self.kwargs.get("review_id")
