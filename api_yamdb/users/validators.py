@@ -6,6 +6,4 @@ def email_validator(email):
     try:
         validate_email(email)
     except ValidationError:
-        raise ValidationError(
-            {'email': 'Введите корректный email.'}
-        )
+        raise ValidationError({"email": "Введите корректный email."})

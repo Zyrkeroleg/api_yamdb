@@ -4,38 +4,55 @@ import pytest
 @pytest.fixture
 def user_superuser(django_user_model):
     return django_user_model.objects.create_superuser(
-        username='TestSuperuser', email='testsuperuser@yamdb.fake', password='1234567', role='user', bio='superuser bio'
+        username="TestSuperuser",
+        email="testsuperuser@yamdb.fake",
+        password="1234567",
+        role="user",
+        bio="superuser bio",
     )
 
 
 @pytest.fixture
 def admin(django_user_model):
     return django_user_model.objects.create_user(
-        username='TestAdmin', email='testadmin@yamdb.fake', password='1234567', role='admin', bio='admin bio'
+        username="TestAdmin",
+        email="testadmin@yamdb.fake",
+        password="1234567",
+        role="admin",
+        bio="admin bio",
     )
 
 
 @pytest.fixture
 def moderator(django_user_model):
     return django_user_model.objects.create_user(
-        username='TestModerator', email='testmoder@yamdb.fake', password='1234567', role='moderator', bio='moder bio'
+        username="TestModerator",
+        email="testmoder@yamdb.fake",
+        password="1234567",
+        role="moderator",
+        bio="moder bio",
     )
 
 
 @pytest.fixture
 def user(django_user_model):
     return django_user_model.objects.create_user(
-        username='TestUser', email='testuser@yamdb.fake', password='1234567', role='user', bio='user bio'
+        username="TestUser",
+        email="testuser@yamdb.fake",
+        password="1234567",
+        role="user",
+        bio="user bio",
     )
 
 
 @pytest.fixture
 def token_user_superuser(user_superuser):
     from rest_framework_simplejwt.tokens import AccessToken
+
     token = AccessToken.for_user(user_superuser)
 
     return {
-        'access': str(token),
+        "access": str(token),
     }
 
 
@@ -51,10 +68,11 @@ def user_superuser_client(token_user_superuser):
 @pytest.fixture
 def token_admin(admin):
     from rest_framework_simplejwt.tokens import AccessToken
+
     token = AccessToken.for_user(admin)
 
     return {
-        'access': str(token),
+        "access": str(token),
     }
 
 
@@ -70,10 +88,11 @@ def admin_client(token_admin):
 @pytest.fixture
 def token_moderator(moderator):
     from rest_framework_simplejwt.tokens import AccessToken
+
     token = AccessToken.for_user(moderator)
 
     return {
-        'access': str(token),
+        "access": str(token),
     }
 
 
@@ -89,10 +108,11 @@ def moderator_client(token_moderator):
 @pytest.fixture
 def token_user(user):
     from rest_framework_simplejwt.tokens import AccessToken
+
     token = AccessToken.for_user(user)
 
     return {
-        'access': str(token),
+        "access": str(token),
     }
 
 
