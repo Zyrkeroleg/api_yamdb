@@ -62,11 +62,9 @@ class TitleGetSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
-        read_only=True, slug_field="username"
-        )
+        read_only=True, slug_field="username")
     review = serializers.SlugRelatedField(
-        read_only=True, slug_field="id"
-        )
+        read_only=True, slug_field="id")
 
     class Meta:
         model = Comment
@@ -94,8 +92,7 @@ class ReviewSerializer(serializers.ModelSerializer):
             for review in set:
                 if review.author.username == author.username:
                     raise ValidationError(
-                        "Вы уже оставляли ревью к этому произведению"
-                        )
+                        "Вы уже оставляли ревью к этому произведению")
         return data
 
     class Meta:

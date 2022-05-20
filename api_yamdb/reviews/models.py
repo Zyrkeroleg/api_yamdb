@@ -67,8 +67,7 @@ class Review(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["author", "title"], name="unique_review"
-                )]
+                fields=["author", "title"], name="unique_review")]
         ordering = ["-pub_date"]
 
     def __str__(self):
@@ -78,7 +77,7 @@ class Review(models.Model):
 class Comment(models.Model):
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="comments"
-        )
+    )
     review = models.ForeignKey(
         Review, on_delete=models.CASCADE, related_name="comments"
     )

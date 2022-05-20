@@ -11,10 +11,8 @@ urlpatterns = [
     path(
         "redoc/",
         TemplateView.as_view(template_name="redoc.html"),
-        name="redoc"
-        ),
-    path("api/", include("api.urls")),
-    ]
+        name="redoc"),
+    path("api/", include("api.urls")), ]
 
 schema_view = get_schema_view(
     openapi.Info(
