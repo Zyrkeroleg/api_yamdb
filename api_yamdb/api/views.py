@@ -1,14 +1,13 @@
-# from turtle import title
-
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, status, viewsets
-from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.pagination import (LimitOffsetPagination,
+                                       PageNumberPagination)
 from rest_framework.response import Response
-# from rest_framework.views import PermissionDenied
-from reviews.models import Categories, Genres, Review, Titles
+from reviews.models import Categories, Genres, Review, Title
 
 from .filters import TitleFilter
+from .pagination import CustomPagination
 from .permissions import (AdminOnlyPermission, ReviewsComentsPermission,
                           SafeMethodsOnlyPermission)
 from .serializers import (CategorySerializer, CommentSerializer,
@@ -17,7 +16,7 @@ from .serializers import (CategorySerializer, CommentSerializer,
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Titles.objects.all()
+    queryset = Title.objects.all()
     filter_backends = (DjangoFilterBackend,)
     http_method_names = ['get', 'post', 'head', 'patch', 'delete']
     filter_class = TitleFilter
@@ -60,10 +59,11 @@ class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
     permission_classes = (ReviewsComentsPermission,)
+    pagination_class = CustomPagination
 
     def perform_create(self, serializer):
         title_id = self.kwargs.get("title_id")
-        title = get_object_or_404(Titles, id=title_id)
+        title = get_object_or_404(Title, id=title_id)
         serializer.save(author=self.request.user, title=title)
 
 

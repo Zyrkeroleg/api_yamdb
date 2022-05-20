@@ -1,6 +1,7 @@
 from django.db.models import Avg
+from django.forms import ValidationError
 from rest_framework import serializers
-from reviews.models import Categories, Comment, Genres, Review, Titles
+from reviews.models import Categories, Comment, Genres, Review, Title
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -29,7 +30,7 @@ class TitlePostSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = ('id', 'name', 'year', 'description', 'genre', 'category')
-        model = Titles
+        model = Title
 
 
 class TitleGetSerializer(serializers.ModelSerializer):
@@ -41,7 +42,7 @@ class TitleGetSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'year', 'rating', 'description',
                   'genre', 'category', 'rating'
                   )
-        model = Titles
+        model = Title
 
     def get_rating(self, title):
         reviews = Review.objects.filter(
@@ -50,7 +51,8 @@ class TitleGetSerializer(serializers.ModelSerializer):
             rating = None
             return rating
         rating = reviews.all().aggregate(Avg('score'))
-        return rating['score__avg']
+        result = rating['score__avg']
+        return result
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -72,12 +74,23 @@ class ReviewSerializer(serializers.ModelSerializer):
     comments = CommentSerializer(many=True, required=False)
     author = serializers.SlugRelatedField(
         read_only=True,
-        slug_field='username'
-    )
+        slug_field='username',
+        default=serializers.CurrentUserDefault())
     title = serializers.SlugRelatedField(
         read_only=True,
-        slug_field='id'
-    )
+        slug_field='id',
+        default=serializers.CurrentUserDefault())
+
+    def validate(self, data):
+        title = self.context['view'].kwargs['title_id']
+        author = self.context['request'].user
+        set = Review.objects.filter(title=title)
+        if self.context['request'].method != "PATCH":
+            for review in set:
+                if review.author.username == author.username:
+                    raise ValidationError(
+                        'Вы уже оставляли ревью к этому произведению')
+        return data
 
     class Meta:
         model = Review
