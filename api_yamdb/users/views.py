@@ -47,14 +47,16 @@ def get_jwt_token(request):
     """Получение токена."""
     serializer = TokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    user = get_object_or_404(User, username=serializer.validated_data["username"])
+    user = get_object_or_404(
+        User, username=serializer.validated_data["username"])
     if default_token_generator.check_token(
         user, serializer.validated_data["confirmation_code"]
     ):
         token = AccessToken.for_user(user)
         return Response({"token": f"{token}"}, status=status.HTTP_200_OK)
     return Response(
-        {"message": "Пользователь не обнаружен"}, status=status.HTTP_400_BAD_REQUEST
+        {"message": "Пользователь не обнаружен"},
+        status=status.HTTP_400_BAD_REQUEST
     )
 
 
@@ -84,7 +86,9 @@ class UserViewSet(viewsets.ModelViewSet):
         return super().create(request, *args, **kwargs)
 
     @action(
-        detail=False, methods=["get", "patch"], permission_classes=[IsAuthenticated]
+        detail=False,
+        methods=["get", "patch"],
+        permission_classes=[IsAuthenticated]
     )
     def me(self, request):
         user = request.user
@@ -92,7 +96,9 @@ class UserViewSet(viewsets.ModelViewSet):
             serializer = UserSerializer(user)
             return Response(serializer.data, status=status.HTTP_200_OK)
         if request.method == "PATCH":
-            serializer = UserSerializerOrReadOnly(user, data=request.data, partial=True)
+            serializer = UserSerializerOrReadOnly(
+                user, data=request.data,
+                partial=True)
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)

@@ -61,8 +61,12 @@ class TitleGetSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    author = serializers.SlugRelatedField(read_only=True, slug_field="username")
-    review = serializers.SlugRelatedField(read_only=True, slug_field="id")
+    author = serializers.SlugRelatedField(
+        read_only=True, slug_field="username"
+        )
+    review = serializers.SlugRelatedField(
+        read_only=True, slug_field="id"
+        )
 
     class Meta:
         model = Comment
@@ -72,10 +76,14 @@ class CommentSerializer(serializers.ModelSerializer):
 class ReviewSerializer(serializers.ModelSerializer):
     comments = CommentSerializer(many=True, required=False)
     author = serializers.SlugRelatedField(
-        read_only=True, slug_field="username", default=serializers.CurrentUserDefault()
+        read_only=True,
+        slug_field="username",
+        default=serializers.CurrentUserDefault()
     )
     title = serializers.SlugRelatedField(
-        read_only=True, slug_field="id", default=serializers.CurrentUserDefault()
+        read_only=True,
+        slug_field="id",
+        default=serializers.CurrentUserDefault()
     )
 
     def validate(self, data):
@@ -85,7 +93,9 @@ class ReviewSerializer(serializers.ModelSerializer):
         if self.context["request"].method != "PATCH":
             for review in set:
                 if review.author.username == author.username:
-                    raise ValidationError("Вы уже оставляли ревью к этому произведению")
+                    raise ValidationError(
+                        "Вы уже оставляли ревью к этому произведению"
+                        )
         return data
 
     class Meta:

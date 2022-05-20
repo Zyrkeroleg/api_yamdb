@@ -6,7 +6,7 @@ from django.db import models
 
 User = get_user_model()
 now = datetime.datetime.now()
-CURRENT_YEAR = now.year  # текущий год, для проверки поля year
+CURRENT_YEAR = now.year
 
 
 class Categories(models.Model):
@@ -47,11 +47,9 @@ class Review(models.Model):
     text = models.TextField()
     pub_date = models.DateTimeField("Дата публикации", auto_now_add=True)
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="reviews"
-        )
+        User, on_delete=models.CASCADE, related_name="reviews")
     title = models.ForeignKey(
-        Title, on_delete=models.CASCADE, related_name="reviews"
-        )
+        Title, on_delete=models.CASCADE, related_name="reviews")
     score_choices = (
         (1, "1"),
         (2, "2"),
@@ -70,8 +68,7 @@ class Review(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=["author", "title"], name="unique_review"
-                )
-        ]
+                )]
         ordering = ["-pub_date"]
 
     def __str__(self):
@@ -87,5 +84,4 @@ class Comment(models.Model):
     )
     text = models.TextField()
     pub_date = models.DateTimeField(
-        "Дата добавления", auto_now_add=True, db_index=True
-        )
+        "Дата добавления", auto_now_add=True, db_index=True)
