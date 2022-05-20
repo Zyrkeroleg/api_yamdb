@@ -1,13 +1,12 @@
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, status, viewsets
-from rest_framework.pagination import (LimitOffsetPagination,
-                                       PageNumberPagination)
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from reviews.models import Categories, Genres, Review, Title
 
 from .filters import TitleFilter
-from .pagination import CustomPagination
+from .pagination import CustomCommentPagination, CustomReviewPagination
 from .permissions import (AdminOnlyPermission, ReviewsComentsPermission,
                           SafeMethodsOnlyPermission)
 from .serializers import (CategorySerializer, CommentSerializer,
@@ -59,7 +58,13 @@ class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
     permission_classes = (ReviewsComentsPermission,)
-    pagination_class = CustomPagination
+    pagination_class = CustomReviewPagination
+
+    def get_queryset(self):
+        title_id = self.kwargs.get("title_id")
+        title = get_object_or_404(Title, id=title_id)
+        new_queryset = title.reviews.all()
+        return new_queryset
 
     def perform_create(self, serializer):
         title_id = self.kwargs.get("title_id")
@@ -70,6 +75,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = (ReviewsComentsPermission,)
+    pagination_class = CustomCommentPagination
 
     def get_queryset(self):
         review_id = self.kwargs.get("review_id")
