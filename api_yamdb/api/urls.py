@@ -1,7 +1,6 @@
 from django.urls import include, path
 from rest_framework.routers import SimpleRouter
-from rest_framework_simplejwt.views import (TokenObtainPairView,
-                                            TokenRefreshView)
+from rest_framework_simplejwt.views import TokenRefreshView
 from users.views import UserViewSet, get_jwt_token, sending_mail
 
 from .views import (CategoryViewSet, CommentViewSet, GenreViewSet,

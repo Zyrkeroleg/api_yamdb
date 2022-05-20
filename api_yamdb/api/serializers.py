@@ -1,8 +1,6 @@
 from django.db.models import Avg
 from django.forms import ValidationError
-from requests import request
 from rest_framework import serializers
-from rest_framework.validators import UniqueTogetherValidator
 from reviews.models import Categories, Comment, Genres, Review, Title
 
 
@@ -84,7 +82,6 @@ class ReviewSerializer(serializers.ModelSerializer):
         default=serializers.CurrentUserDefault())
 
     def validate(self, data):
-        print(self)
         title = self.context['view'].kwargs['title_id']
         author = self.context['request'].user
         set = Review.objects.filter(title=title)
