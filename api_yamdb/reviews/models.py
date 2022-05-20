@@ -7,6 +7,18 @@ from django.db import models
 User = get_user_model()
 now = datetime.datetime.now()
 CURRENT_YEAR = now.year
+SCORE_CHOICES = (
+    (1, "1"),
+    (2, "2"),
+    (3, "3"),
+    (4, "4"),
+    (5, "5"),
+    (6, "6"),
+    (7, "7"),
+    (8, "8"),
+    (9, "9"),
+    (10, "10"),
+)
 
 
 class Categories(models.Model):
@@ -50,19 +62,7 @@ class Review(models.Model):
         User, on_delete=models.CASCADE, related_name="reviews")
     title = models.ForeignKey(
         Title, on_delete=models.CASCADE, related_name="reviews")
-    score_choices = (
-        (1, "1"),
-        (2, "2"),
-        (3, "3"),
-        (4, "4"),
-        (5, "5"),
-        (6, "6"),
-        (7, "7"),
-        (8, "8"),
-        (9, "9"),
-        (10, "10"),
-    )
-    score = models.CharField(max_length=2, choices=score_choices, default=1)
+    score = models.IntegerField(max_length=2, choices=SCORE_CHOICES, default=1)
 
     class Meta:
         constraints = [
