@@ -1,8 +1,7 @@
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, mixins, status, viewsets
+from rest_framework import filters, mixins, viewsets
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.response import Response
 from reviews.models import Categories, Genres, Review, Title
 
 from .filters import TitleFilter
@@ -95,11 +94,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         new_queryset = review.comments.all()
         return new_queryset
 
-    def create(self, request, *args, **kwargs):
-        serializer = CommentSerializer(data=request.data)
-        if serializer.is_valid():
-            review_id = self.kwargs.get("review_id")
-            review = get_object_or_404(Review, id=review_id)
-            serializer.save(author=request.user, review=review)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def perform_create(self, serializer):
+        review_id = self.kwargs.get('review_id')
+        review = get_object_or_404(Review, id=review_id)
+        serializer.save(author=self.request.user, review=review)
