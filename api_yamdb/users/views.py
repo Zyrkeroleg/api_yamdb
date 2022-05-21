@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
+from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action, api_view
@@ -71,19 +72,13 @@ class UserViewSet(viewsets.ModelViewSet):
         "username",
     ]
 
-    def create(self, request, *args, **kwargs):
-        if not request.data.get("email"):
-            return Response(
-                "Поле email обязательно", status=status.HTTP_400_BAD_REQUEST
-            )
-        email = request.data.get("email")
-        print(email)
+    def perform_create(self, serializer):
+        email = self.request.data.get("email")
         if User.objects.filter(email=email):
             return Response(
                 "Email уже зарегестрирован", status=status.HTTP_400_BAD_REQUEST
             )
-
-        return super().create(request, *args, **kwargs)
+        serializer.save()
 
     @action(
         detail=False,

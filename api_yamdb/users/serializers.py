@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
+from rest_framework.validators import UniqueTogetherValidator
 
 from users.models import User
 
@@ -12,7 +13,7 @@ class UserSerializerOrReadOnly(serializers.ModelSerializer):
         model = User
 
 
-class RegisterSerializer(serializers.ModelSerializer):
+class RegisterSerializer(serializers.Serializer):
     email = serializers.EmailField(
         required=True,
         validators=[UniqueValidator(queryset=User.objects.all())]
@@ -47,9 +48,16 @@ class UserSerializer(serializers.ModelSerializer):
         )
         model = User
         lookup_field = "username"
+        validators = [
+            UniqueTogetherValidator(
+                queryset=User.objects.all(),
+                fields=("email",),
+                message="Почта уже существует",
+            )
+        ]
 
 
-class TokenSerializer(serializers.ModelSerializer):
+class TokenSerializer(serializers.Serializer):
     username = serializers.CharField()
     confirmation_code = serializers.CharField()
 
