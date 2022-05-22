@@ -15,7 +15,7 @@ class SafeMethodsOnlyPermission(permissions.BasePermission):
             request.method in permissions.SAFE_METHODS
             or request.user.is_superuser
             or request.user.is_authenticated and request.user.is_admin
-        ) 
+        )
 
 
 class ReviewsComentsPermission(permissions.BasePermission):
