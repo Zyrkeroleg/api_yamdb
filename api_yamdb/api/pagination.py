@@ -6,7 +6,6 @@ class CustomReviewPagination(pagination.PageNumberPagination):
     page_size = 3
 
     def get_paginated_response(self, data):
-        print(data)
         return Response(
             {
                 "next": self.get_next_link(),
