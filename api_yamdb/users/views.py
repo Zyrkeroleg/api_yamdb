@@ -38,7 +38,7 @@ def sending_mail(request):
         [user.email],
         fail_silently=False,
     )
-    # ответ, если верно
+
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
